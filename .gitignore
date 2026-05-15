@@ -1,0 +1,30 @@
+# 모델 가중치 (대용량 바이너리)
+*.pt
+*.bin
+*.safetensors
+
+# AlphaFold 구조 파일 (191MB)
+cache/alphafold/
+
+# Python 캐시
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# 환경
+.env
+*.egg-info/
+dist/
+build/
+
+# 데이터
+data/
+*.csv.gz
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db

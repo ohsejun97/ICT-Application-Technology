@@ -1,0 +1,112 @@
+{
+  "experiment": {
+    "n_queries": 50,
+    "drop_rate": 0.3,
+    "corrupt_rate": 0.15,
+    "lat_min": 0.6,
+    "lat_max": 1.4,
+    "seed": 77,
+    "pkd_high": 7.0,
+    "pkd_mod": 5.0
+  },
+  "network": {
+    "total_queries": 50,
+    "received": 33,
+    "dropped": 17,
+    "loss_rate": 0.34,
+    "corrupt_handled": 3,
+    "drop_imputed": 17,
+    "inference_imputed": 0,
+    "network_alert": true
+  },
+  "decisions": {
+    "HIGH": 8,
+    "MODERATE": 29,
+    "LOW": 13,
+    "avg_pKd": 6.0437
+  },
+  "per_drug": {
+    "Imatinib": {
+      "count": 5,
+      "avg_pKd": 7.6095,
+      "paths": [
+        "normal",
+        "drop_imputed"
+      ]
+    },
+    "Nilotinib": {
+      "count": 5,
+      "avg_pKd": 8.3376,
+      "paths": [
+        "normal",
+        "drop_imputed"
+      ]
+    },
+    "Gefitinib": {
+      "count": 5,
+      "avg_pKd": 6.0439,
+      "paths": [
+        "normal",
+        "corrupt_recovered",
+        "drop_imputed"
+      ]
+    },
+    "Erlotinib": {
+      "count": 5,
+      "avg_pKd": 4.9671,
+      "paths": [
+        "normal"
+      ]
+    },
+    "Dasatinib": {
+      "count": 5,
+      "avg_pKd": 6.4056,
+      "paths": [
+        "normal",
+        "corrupt_recovered",
+        "drop_imputed"
+      ]
+    },
+    "Sorafenib": {
+      "count": 5,
+      "avg_pKd": 5.8047,
+      "paths": [
+        "normal",
+        "drop_imputed"
+      ]
+    },
+    "Vemurafenib": {
+      "count": 5,
+      "avg_pKd": 5.7076,
+      "paths": [
+        "normal",
+        "corrupt_recovered",
+        "drop_imputed"
+      ]
+    },
+    "Ibrutinib": {
+      "count": 5,
+      "avg_pKd": 4.5923,
+      "paths": [
+        "normal"
+      ]
+    },
+    "Sunitinib": {
+      "count": 5,
+      "avg_pKd": 5.0136,
+      "paths": [
+        "normal",
+        "drop_imputed"
+      ]
+    },
+    "Crizotinib": {
+      "count": 5,
+      "avg_pKd": 5.9556,
+      "paths": [
+        "normal",
+        "drop_imputed"
+      ]
+    }
+  },
+  "timestamp": "2026-05-15T11:17:30.053003"
+}

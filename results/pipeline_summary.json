@@ -1,0 +1,14 @@
+{
+  "total_queries": 15,
+  "received": 15,
+  "dropped": 0,
+  "loss_rate": 0.0,
+  "corrupt_handled": 2,
+  "imputed": 0,
+  "HIGH": 3,
+  "MODERATE": 8,
+  "LOW": 4,
+  "avg_pKd": 6.0145,
+  "network_alert": false,
+  "timestamp": "2026-05-15T10:28:00.436743"
+}
