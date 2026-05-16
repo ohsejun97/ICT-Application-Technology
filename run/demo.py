@@ -35,7 +35,7 @@ def orange(s): return f"{C.ORANGE}{C.BOLD}{s}{C.RESET}"
 
 # ── 인자 ──────────────────────────────────────────────────────────────────────
 parser = argparse.ArgumentParser()
-parser.add_argument("--n_queries",    type=int,   default=20)
+parser.add_argument("--n_queries",    type=int,   default=60)
 parser.add_argument("--drop_rate",    type=float, default=0.20,
                     help="패킷 드롭 확률 (기본 20%)")
 parser.add_argument("--corrupt_rate", type=float, default=0.15,
@@ -95,38 +95,37 @@ def _print_seq_banner():
         print(f"  {bold(f'{name:8s}')} {tag}")
     print(f"{bold('━'*62)}\n")
 
-# ── 샘플 쿼리 (DAVIS full-length 서열) ────────────────────────────────────────
+# ── 10 drugs × 6 targets = 60 unique drug-target pairs ───────────────────────
+_DRUGS = [
+    ("Imatinib",
+     "CC1=C(C=C(C=C1)NC(=O)C2=CC=C(C=C2)CN3CCN(CC3)C)NC4=NC=CC(=N4)C5=CN=CC=C5"),
+    ("Nilotinib",
+     "CC1=CN=C(C(=C1)NC(=O)C2=CC(=CC=N2)C(F)(F)F)NC3=CC(=C(C=C3)CN4CCN(CC4)C)C(F)(F)F"),
+    ("Dasatinib",
+     "CC1=NC(=CC(=C1)NC(=O)C2=CC(=CC=C2)Cl)NC3=NC=C(C=N3)C4=CN=CC=C4"),
+    ("Gefitinib",
+     "COC1=C(C=C2C(=C1)N=CN=C2NC3=CC(=C(C=C3)F)Cl)OCCCN4CCOCC4"),
+    ("Erlotinib",
+     "COCCOC1=C(C=C2C(=C1)C(=NC=N2)NC3=CC=CC(=C3)C#C)OCCOC"),
+    ("Sorafenib",
+     "CNC(=O)C1=NC=CC(=C1)OC2=CC=C(C=C2)NC(=O)NC3=CC(=C(C=C3)Cl)C(F)(F)F"),
+    ("Vemurafenib",
+     "CCCS(=O)(=O)NC1=CC(=C(C=C1F)NC(=O)C2=CNC3=CC(=C(C=C23)Cl)F)F"),
+    ("Ibrutinib",
+     "C=CC(=O)N1CCCC(C1)N2C=NC3=C(N=CN=C23)NCC4=CC=CC=C4"),
+    ("Sunitinib",
+     "CCN(CC)CCNC(=O)C1=C(NC2=CC=CC3=CC=CC=C23)C(=O)C1=O"),
+    ("Crizotinib",
+     "CCCS(=O)(=O)NC1=C2C=C(NC(=O)C3=CN=C4C=CC=CC4=C3)C=CC2=NC(=N1)N"),
+]
+_TARGETS = ["ABL1", "EGFR", "BRAF", "BTK", "PDGFRA", "ALK"]
+
+# 10 × 6 = 60 pairs, ordered drug-major (D1T1..D1T6, D2T1..D2T6, ...)
 SAMPLE_QUERIES = [
-    ("Q01", "Imatinib",
-     "CC1=C(C=C(C=C1)NC(=O)C2=CC=C(C=C2)CN3CCN(CC3)C)NC4=NC=CC(=N4)C5=CN=CC=C5",
-     "ABL1", _seq("ABL1")),
-    ("Q02", "Nilotinib",
-     "CC1=CN=C(C(=C1)NC(=O)C2=CC(=CC=N2)C(F)(F)F)NC3=CC(=C(C=C3)CN4CCN(CC4)C)C(F)(F)F",
-     "ABL1", _seq("ABL1")),
-    ("Q03", "Gefitinib",
-     "COC1=C(C=C2C(=C1)N=CN=C2NC3=CC(=C(C=C3)F)Cl)OCCCN4CCOCC4",
-     "EGFR", _seq("EGFR")),
-    ("Q04", "Erlotinib",
-     "COCCOC1=C(C=C2C(=C1)C(=NC=N2)NC3=CC=CC(=C3)C#C)OCCOC",
-     "EGFR", _seq("EGFR")),
-    ("Q05", "Dasatinib",
-     "CC1=NC(=CC(=C1)NC(=O)C2=CC(=CC=C2)Cl)NC3=NC=C(C=N3)C4=CN=CC=C4",
-     "ABL1", _seq("ABL1")),
-    ("Q06", "Sorafenib",
-     "CNC(=O)C1=NC=CC(=C1)OC2=CC=C(C=C2)NC(=O)NC3=CC(=C(C=C3)Cl)C(F)(F)F",
-     "BRAF", _seq("BRAF")),
-    ("Q07", "Vemurafenib",
-     "CCCS(=O)(=O)NC1=CC(=C(C=C1F)NC(=O)C2=CNC3=CC(=C(C=C23)Cl)F)F",
-     "BRAF", _seq("BRAF")),
-    ("Q08", "Ibrutinib",
-     "C=CC(=O)N1CCCC(C1)N2C=NC3=C(N=CN=C23)NCC4=CC=CC=C4",
-     "BTK", _seq("BTK")),
-    ("Q09", "Sunitinib",
-     "CCN(CC)CCNC(=O)C1=C(NC2=CC=CC3=CC=CC=C23)C(=O)C1=O",
-     "PDGFRA", _seq("PDGFRA")),
-    ("Q10", "Crizotinib",
-     "CCCS(=O)(=O)NC1=C2C=C(NC(=O)C3=CN=C4C=CC=CC4=C3)C=CC2=NC(=N1)N",
-     "ALK", _seq("ALK")),
+    (f"D{di+1:02d}-{tname}",
+     dname, smi, tname, _seq(tname))
+    for di, (dname, smi) in enumerate(_DRUGS)
+    for tname in _TARGETS
 ]
 
 
