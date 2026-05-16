@@ -34,7 +34,7 @@ parser.add_argument("--alert_loss",  type=float, default=0.30, help="Network Ale
 parser.add_argument("--output",      default="results/pipeline_log.jsonl", help="결과 로그 파일")
 args = parser.parse_args()
 
-ROOT = Path(__file__).parent
+ROOT = Path(__file__).parent.parent
 OUT  = ROOT / args.output
 OUT.parent.mkdir(parents=True, exist_ok=True)
 

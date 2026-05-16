@@ -17,11 +17,15 @@ SaProt + DTI 회귀 헤드를 DAVIS 연속 pKd 데이터로 학습 및 평가
 """
 
 import os, sys, time, json, argparse, math
+import sys
 import numpy as np
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
 from scipy.stats import pearsonr
+
+# project root on sys.path so 'tools.*' imports work from models/
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import torch
 import torch.nn as nn

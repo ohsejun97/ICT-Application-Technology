@@ -12,7 +12,7 @@ import hashlib
 import json
 from pathlib import Path
 
-ROOT = Path(__file__).parent
+ROOT = Path(__file__).parent.parent
 
 # ── 3Di 캐시 로드 ─────────────────────────────────────────────────────────────
 cache_path = ROOT / "cache" / "3di_tokens_davis.json"

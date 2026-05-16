@@ -60,7 +60,7 @@ pip install -r requirements.txt
 
 ```bash
 # DAVIS canonical 서열 추출 (3Di 캐시 히트 확인 포함)
-conda run -n bioinfo python prepare_sequences.py
+conda run -n bioinfo python scripts/prepare_sequences.py
 # → davis_seqs_for_demo.json 생성 (이미 repo에 포함되어 있어 재실행 불필요)
 ```
 
@@ -90,15 +90,15 @@ conda run -n bioinfo python demo.py \
 
 ```bash
 # 단순 파이프라인 (UI 없는 버전)
-conda run -n bioinfo python pipeline.py
-conda run -n bioinfo python pipeline.py --n_queries 50 --drop_rate 0.20
+conda run -n bioinfo python scripts/pipeline.py
+conda run -n bioinfo python scripts/pipeline.py --n_queries 50 --drop_rate 0.20
 
 # 모델 재학습 (GPU 필요, ~7시간)
-conda run -n bioinfo python train.py --dataset bindingdb
-conda run -n bioinfo python train.py --dataset davis
+conda run -n bioinfo python models/train.py --dataset bindingdb
+conda run -n bioinfo python models/train.py --dataset davis
 
 # 시각화 생성
-conda run -n bioinfo python scripts/plot_poster_figures.py
+conda run -n bioinfo python models/plot_poster_figures.py
 ```
 
 ---
@@ -109,57 +109,49 @@ conda run -n bioinfo python scripts/plot_poster_figures.py
 ICT_2026/
 │
 ├── demo.py                    ← 발표용 메인 데모 (ANSI 색상, 영상 촬영 최적화)
-├── pipeline.py                ← 기본 파이프라인 (데모보다 단순한 출력)
 ├── dashboard.py               ← Streamlit 실시간 대시보드 (auto-refresh 2s)
-├── train.py                   ← SaProt + DTI 모델 학습 (train_dti_saprot.py에서 이름 변경)
-├── prepare_sequences.py       ← DAVIS canonical 서열 추출 → davis_seqs_for_demo.json
 │
 ├── davis_seqs_for_demo.json   ← 10개 단백질 full-length 서열 + 3Di 히트 정보
 ├── requirements.txt           ← Python 의존성
 ├── setup_env.sh               ← conda 환경 초기 설정 스크립트
 │
-├── tools/                     ← AI 추론 모듈 (demo.py, pipeline.py에서 임포트)
-│   ├── dti_tool.py            ← DTI 추론 API (SaProt + ChemBERTa + MLP Head, singleton)
-│   ├── chemberta_drug_encoder.py  ← ChemBERTa 약물 인코더
-│   ├── rdkit_tool.py          ← RDKit Morgan FP 계산
-│   ├── alphafold_tool.py      ← AlphaFold2 구조 조회 (UniProt → PDB)
-│   ├── foldseek_tool.py       ← FoldSeek 3Di 토큰 추출
-│   ├── pubchem_tool.py        ← PubChem 약물 정보 조회
-│   ├── uniprot_tool.py        ← UniProt 단백질 서열 조회
-│   └── gnn_drug_encoder.py    ← GNN 기반 약물 인코더 (실험용, 미사용)
+├── tools/                     ← 추론 엔진 (demo.py가 런타임에 임포트)
+│   ├── dti_tool.py            ← DTI 추론 API — SaProt + ChemBERTa + MLP Head (핵심)
+│   ├── chemberta_drug_encoder.py  ← ChemBERTa 약물 인코더 (학습 시 사용)
+│   ├── foldseek_tool.py       ← FoldSeek 3Di 토큰 추출 (캐시 구축 시 사용)
+│   ├── alphafold_tool.py      ← AlphaFold2 구조 조회 (캐시 구축 시 사용)
+│   └── gnn_drug_encoder.py    ← GNN 약물 인코더 (학습 실험용)
 │
-├── scripts/                   ← 학습·전처리·평가 스크립트 (일회성 실행)
-│   ├── build_3di_cache.py     ← FoldSeek 3Di 토큰 캐시 구축
-│   ├── preprocess_bindingdb.py ← BindingDB 데이터 전처리
-│   ├── finetune_head.py       ← DAVIS/KIBA 헤드 전이학습 (기본)
+├── models/                    ← 모델 학습 · 전이학습 · 평가 스크립트
+│   ├── train.py               ← 메인 학습 (BindingDB/DAVIS/KIBA, LoRA 지원)
+│   ├── finetune_head.py       ← 헤드 전이학습 (기본)
 │   ├── finetune_head_ft.py    ← ft-ChemBERTa + 헤드 전이학습
 │   ├── train_chemberta_unfreeze.py ← ChemBERTa layers 4~5 unfreeze 학습
 │   ├── cross_eval.py          ← 교차 데이터셋 평가 (DAVIS↔KIBA)
-│   └── plot_poster_figures.py ← 발표 포스터용 시각화 생성
+│   ├── build_3di_cache.py     ← FoldSeek 3Di 토큰 캐시 구축
+│   ├── preprocess_bindingdb.py ← BindingDB 전처리
+│   ├── plot_poster_figures.py ← 발표 시각화 생성
+│   └── README.md              ← 각 스크립트 상세 설명
+│
+├── scripts/                   ← 환경 준비 및 유틸리티
+│   ├── prepare_sequences.py   ← DAVIS full-length 서열 추출 → davis_seqs_for_demo.json
+│   ├── pipeline.py            ← 기본 파이프라인 (demo.py 단순화 버전)
+│   └── README.md              ← 각 스크립트 상세 설명
 │
 ├── cache/                     ← 3Di 토큰 캐시 (MD5 해시 → 구조 토큰)
 │   ├── 3di_tokens_davis.json  ← DAVIS 379개 단백질 3Di 토큰
 │   ├── 3di_tokens_kiba.json   ← KIBA 단백질 3Di 토큰
-│   ├── 3di_tokens_bindingdb.json ← BindingDB 단백질 3Di 토큰
-│   ├── alphafold/             ← AlphaFold PDB 파일 캐시
-│   ├── ligands/               ← 리간드 SDF 파일 캐시
-│   ├── pubchem/               ← PubChem 조회 결과 캐시
-│   └── uniprot/               ← UniProt 서열 조회 캐시
+│   └── 3di_tokens_bindingdb.json ← BindingDB 단백질 3Di 토큰
 │
 ├── results/                   ← 학습 모델 가중치 및 실험 결과
 │   ├── SaProt-650M-bindingdb-3di-chemberta-unfreeze2-random/
 │   │   ├── result.json        ← 학습 결과 (r=0.8923)
-│   │   ├── dti_head.pt        ← MLP head 가중치 (demo.py에서 로드)
+│   │   ├── dti_head.pt        ← MLP head 가중치 (demo.py 로드)
 │   │   └── chemberta_ft.pt    ← fine-tuned ChemBERTa 가중치
-│   ├── finetune_davis_random_.../
-│   │   └── result.json        ← DAVIS 전이 결과 (r=0.8677)
-│   ├── finetune_kiba_random_.../
-│   │   └── result.json        ← KIBA 전이 결과 (r=0.8594)
-│   ├── demo_log.jsonl         ← demo.py 실행 결과 로그 (JSONL)
-│   ├── demo_summary.json      ← demo.py 요약 통계
-│   ├── demo50_log.jsonl       ← 50쿼리 실험 로그
-│   ├── pipeline_log.jsonl     ← pipeline.py 실행 결과
-│   └── pipeline_summary.json  ← pipeline.py 요약 통계
+│   ├── finetune_davis_random_.../result.json   ← DAVIS 전이 결과 (r=0.8677)
+│   ├── finetune_kiba_random_.../result.json    ← KIBA 전이 결과 (r=0.8594)
+│   ├── demo_log.jsonl         ← 최종 실험 결과 로그
+│   └── demo_summary.json      ← 최종 실험 요약
 │
 ├── docs/                      ← 기술 문서
 │   └── REPORT.md              ← 종합 기술 보고서 (모델·실험·Q&A 포함)
