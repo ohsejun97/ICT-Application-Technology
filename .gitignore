@@ -6,6 +6,11 @@
 # AlphaFold 구조 파일 (191MB)
 cache/alphafold/
 
+# 에이전트 툴 부산물 캐시 (데모 실행에 불필요)
+cache/ligands/
+cache/pubchem/
+cache/uniprot/
+
 # Python 캐시
 __pycache__/
 *.pyc

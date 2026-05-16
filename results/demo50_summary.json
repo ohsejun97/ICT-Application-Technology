@@ -23,7 +23,7 @@
     "HIGH": 18,
     "MODERATE": 32,
     "LOW": 0,
-    "avg_pKd": 6.5469
+    "avg_pKd": 6.5523
   },
   "model_quality": {
     "used_3di": 33,
@@ -35,16 +35,16 @@
       "count": 5,
       "avg_pKd": 7.1138,
       "paths": [
-        "normal",
-        "drop_imputed"
+        "drop_imputed",
+        "normal"
       ]
     },
     "Gefitinib": {
       "count": 5,
       "avg_pKd": 7.069,
       "paths": [
-        "normal",
         "drop_imputed",
+        "normal",
         "corrupt_recovered"
       ]
     },
@@ -52,8 +52,8 @@
       "count": 5,
       "avg_pKd": 7.2681,
       "paths": [
-        "normal",
-        "drop_imputed"
+        "drop_imputed",
+        "normal"
       ]
     },
     "Erlotinib": {
@@ -67,16 +67,16 @@
       "count": 5,
       "avg_pKd": 5.7708,
       "paths": [
-        "normal",
-        "drop_imputed"
+        "drop_imputed",
+        "normal"
       ]
     },
     "Dasatinib": {
       "count": 5,
       "avg_pKd": 6.3977,
       "paths": [
-        "normal",
         "drop_imputed",
+        "normal",
         "corrupt_recovered"
       ]
     },
@@ -84,16 +84,16 @@
       "count": 5,
       "avg_pKd": 6.2789,
       "paths": [
-        "normal",
-        "drop_imputed"
+        "drop_imputed",
+        "normal"
       ]
     },
     "Vemurafenib": {
       "count": 5,
-      "avg_pKd": 6.1591,
+      "avg_pKd": 6.2127,
       "paths": [
-        "normal",
         "drop_imputed",
+        "normal",
         "corrupt_recovered"
       ]
     },
@@ -101,8 +101,8 @@
       "count": 5,
       "avg_pKd": 7.1221,
       "paths": [
-        "normal",
-        "drop_imputed"
+        "drop_imputed",
+        "normal"
       ]
     },
     "Ibrutinib": {
@@ -113,5 +113,5 @@
       ]
     }
   },
-  "timestamp": "2026-05-16T13:50:54.642179"
+  "timestamp": "2026-05-16T13:39:33.931368"
 }
