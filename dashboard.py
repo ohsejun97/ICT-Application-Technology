@@ -154,10 +154,31 @@ with tab_live:
 
         # ── pKd 시계열 그래프 ─────────────────────────────────────────────────
         st.subheader("📈 pKd 시계열")
-        chart_df = df[["query_id", "pKd"]].copy()
-        chart_df.index = range(len(chart_df))
-        st.line_chart(chart_df.set_index("query_id")["pKd"])
-        st.caption(f"기준선 — HIGH: pKd ≥ {pkd_high}  |  MODERATE: pKd ≥ {pkd_mod}  |  LOW: pKd < {pkd_mod}")
+        import plotly.graph_objects as go
+        colors = df["decision"].map({"HIGH": "#22c55e", "MODERATE": "#eab308", "LOW": "#ef4444"})
+        fig = go.Figure()
+        fig.add_hline(y=pkd_high, line_dash="dash", line_color="#22c55e",
+                      annotation_text=f"HIGH ≥{pkd_high}", annotation_position="top left")
+        fig.add_hline(y=pkd_mod,  line_dash="dash", line_color="#eab308",
+                      annotation_text=f"MODERATE ≥{pkd_mod}", annotation_position="top left")
+        fig.add_trace(go.Scatter(
+            x=list(range(1, len(df)+1)),
+            y=df["pKd"],
+            mode="lines+markers",
+            line=dict(color="#60a5fa", width=2),
+            marker=dict(color=colors, size=8, line=dict(width=1, color="white")),
+            text=df["drug_name"] + "<br>" + df["protein_name"] + "<br>path: " + df["path"],
+            hovertemplate="<b>#%{x}</b><br>pKd: %{y:.4f}<br>%{text}<extra></extra>",
+        ))
+        fig.update_layout(
+            xaxis_title="쿼리 순번", yaxis_title="pKd",
+            height=350, margin=dict(l=20, r=20, t=20, b=40),
+            plot_bgcolor="#0e1117", paper_bgcolor="#0e1117",
+            font_color="#fafafa",
+            xaxis=dict(gridcolor="#1f2937"), yaxis=dict(gridcolor="#1f2937"),
+        )
+        st.plotly_chart(fig, use_container_width=True)
+        st.caption("마커 색상 — 🟢 HIGH  🟡 MODERATE  🔴 LOW  |  수평선: 임계값")
 
         st.markdown("---")
 
