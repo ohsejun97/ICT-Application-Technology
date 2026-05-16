@@ -1,6 +1,6 @@
 {
   "experiment": {
-    "n_queries": 50,
+    "n_queries": 60,
     "drop_rate": 0.3,
     "corrupt_rate": 0.15,
     "lat_min": 0.6,
@@ -10,108 +10,110 @@
     "pkd_mod": 5.0
   },
   "network": {
-    "total_queries": 50,
-    "received": 33,
-    "dropped": 17,
-    "loss_rate": 0.34,
+    "total_queries": 60,
+    "received": 38,
+    "dropped": 22,
+    "loss_rate": 0.3667,
     "corrupt_handled": 3,
-    "drop_imputed": 17,
+    "drop_imputed": 22,
     "inference_imputed": 0,
     "network_alert": true
   },
   "decisions": {
-    "HIGH": 18,
-    "MODERATE": 32,
-    "LOW": 0,
-    "avg_pKd": 6.5469
+    "HIGH": 21,
+    "MODERATE": 38,
+    "LOW": 1,
+    "avg_pKd": 6.7081
   },
   "model_quality": {
-    "used_3di": 33,
-    "total_inferred": 33,
+    "used_3di": 38,
+    "total_inferred": 38,
     "3di_rate": 1.0
   },
   "per_drug": {
     "Imatinib": {
-      "count": 5,
-      "avg_pKd": 7.1138,
+      "count": 6,
+      "avg_pKd": 6.6189,
       "paths": [
-        "normal",
-        "drop_imputed"
-      ]
-    },
-    "Gefitinib": {
-      "count": 5,
-      "avg_pKd": 7.069,
-      "paths": [
-        "normal",
         "drop_imputed",
-        "corrupt_recovered"
-      ]
-    },
-    "Nilotinib": {
-      "count": 5,
-      "avg_pKd": 7.2681,
-      "paths": [
-        "normal",
-        "drop_imputed"
-      ]
-    },
-    "Erlotinib": {
-      "count": 5,
-      "avg_pKd": 7.2848,
-      "paths": [
         "normal"
       ]
     },
-    "Crizotinib": {
-      "count": 5,
-      "avg_pKd": 5.7708,
+    "Nilotinib": {
+      "count": 6,
+      "avg_pKd": 7.4847,
       "paths": [
-        "normal",
-        "drop_imputed"
+        "drop_imputed",
+        "normal"
       ]
     },
     "Dasatinib": {
-      "count": 5,
-      "avg_pKd": 6.3977,
+      "count": 6,
+      "avg_pKd": 6.6899,
       "paths": [
-        "normal",
         "drop_imputed",
+        "normal",
         "corrupt_recovered"
       ]
     },
-    "Sorafenib": {
-      "count": 5,
-      "avg_pKd": 6.2789,
+    "Gefitinib": {
+      "count": 6,
+      "avg_pKd": 7.1478,
       "paths": [
+        "drop_imputed",
         "normal",
-        "drop_imputed"
+        "corrupt_recovered"
+      ]
+    },
+    "Erlotinib": {
+      "count": 6,
+      "avg_pKd": 7.1316,
+      "paths": [
+        "drop_imputed",
+        "normal"
+      ]
+    },
+    "Sorafenib": {
+      "count": 6,
+      "avg_pKd": 6.6593,
+      "paths": [
+        "drop_imputed",
+        "normal"
       ]
     },
     "Vemurafenib": {
-      "count": 5,
-      "avg_pKd": 6.1591,
+      "count": 6,
+      "avg_pKd": 6.6814,
       "paths": [
-        "normal",
         "drop_imputed",
+        "normal"
+      ]
+    },
+    "Ibrutinib": {
+      "count": 6,
+      "avg_pKd": 5.924,
+      "paths": [
+        "drop_imputed",
+        "normal",
         "corrupt_recovered"
       ]
     },
     "Sunitinib": {
-      "count": 5,
-      "avg_pKd": 7.1221,
+      "count": 6,
+      "avg_pKd": 6.1026,
       "paths": [
-        "normal",
-        "drop_imputed"
+        "drop_imputed",
+        "normal"
       ]
     },
-    "Ibrutinib": {
-      "count": 5,
-      "avg_pKd": 5.005,
+    "Crizotinib": {
+      "count": 6,
+      "avg_pKd": 6.641,
       "paths": [
+        "drop_imputed",
         "normal"
       ]
     }
   },
-  "timestamp": "2026-05-16T13:50:54.642179"
+  "timestamp": "2026-05-16T14:16:46.031793"
 }
