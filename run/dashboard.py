@@ -102,22 +102,13 @@ tab_live, tab_seqs = st.tabs(["📡 Live Monitor", "🧬 DAVIS Protein Sequences
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 with tab_live:
 
-    # ── Network stats — live from log when summary not yet written ───────────
-    net = summary.get("network", {})
-
-    # live fallbacks computed directly from log
-    live_received = len(df) if not df.empty else 0
-    live_dropped  = int((df["path"] == "drop_imputed").sum())  if not df.empty and "path" in df.columns else 0
-    live_imputed  = int((df["path"] == "imputed").sum())       if not df.empty and "path" in df.columns else 0
-    live_total    = live_received + live_dropped
-    live_loss_pct = live_dropped / live_total * 100 if live_total > 0 else 0.0
-
-    received  = net.get("received",           live_received)
-    dropped   = net.get("dropped",            live_dropped)
-    imputed   = net.get("inference_imputed",  live_imputed)
-    total     = net.get("total_queries",      live_total)
-    loss_pct  = net.get("loss_rate", live_loss_pct / 100) * 100
-    net_alert = net.get("network_alert", live_loss_pct > 30)
+    # ── Network stats ─────────────────────────────────────────────────────────
+    total    = summary.get("total_queries",  summary.get("network", {}).get("total_queries", 0))
+    received = summary.get("received",       summary.get("network", {}).get("received", len(df) if not df.empty else 0))
+    dropped  = summary.get("dropped",        summary.get("network", {}).get("dropped", 0))
+    loss_pct = summary.get("loss_rate",      summary.get("network", {}).get("loss_rate", 0.0)) * 100
+    imputed  = summary.get("imputed",        summary.get("network", {}).get("inference_imputed", 0))
+    net_alert= summary.get("network_alert",  summary.get("network", {}).get("network_alert", False))
 
     mq        = summary.get("model_quality", {})
     n_3di     = mq.get("used_3di",      int(df["used_3di"].sum()) if not df.empty and "used_3di" in df.columns else 0)
