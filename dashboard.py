@@ -41,6 +41,14 @@ pkd_mod  = st.sidebar.slider("MODERATE 임계값 (pKd ≥)", 3.0, 7.0, 5.0, 0.1)
 auto_ref = st.sidebar.checkbox("자동 새로고침 (2초)", value=True)
 
 st.sidebar.markdown("---")
+if st.sidebar.button("🗑 로그 초기화 (녹화 전 클릭)", use_container_width=True):
+    for p in [LOG_PATH, SUM_PATH]:
+        if p.exists():
+            p.unlink()
+    st.sidebar.success("초기화 완료 — demo.py를 실행하세요")
+    st.rerun()
+
+st.sidebar.markdown("---")
 st.sidebar.markdown(
     "**모델:** SaProt-650M + ft-ChemBERTa  \n"
     "**학습:** BindingDB 80K (r=0.89)  \n"
