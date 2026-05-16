@@ -1,80 +1,239 @@
-# Intermediate Project Proposal
+# Bio-AI DTI Query Pipeline
 
-## 1. Project Title & Info
+**과목:** ICT Application Technology | **학생:** 오세준 (2021270607)  
+**발표일:** 2026-05-22 | **GitHub:** [ohsejun97/ICT-Application-Technology](https://github.com/ohsejun97/ICT-Application-Technology)
 
-**Title:** Bio-AI DTI Query Pipeline: Real-time Drug-Target Interaction Prediction Under Network Constraints
-**Name:** Oh Se-jun (오세준) | **Student ID:** 2021270607 | **Team:** Individual
-
----
-
-## 2. Target Domain & Problem
-
-**Domain:** Health / Pharmaceutical (Drug Discovery)
-
-**Scenario:** A pharmaceutical company runs High-Throughput Screening (HTS) across geographically distributed lab sites. Each site operates an automated compound screening workstation (edge node) that continuously generates DTI queries — drug molecule (SMILES) + target protein (AA sequence) pairs — and transmits them over a corporate WAN to a central AI inference server. Because multiple labs submit simultaneously during peak screening hours, the shared network suffers from congestion-induced latency and packet loss. Additionally, wireless lab environments (disrupted by nearby equipment) cause occasional payload corruption. If the server cannot recover from these disruptions, promising drug candidates are silently dropped from evaluation.
-
-**Problem:** Design a resilient end-to-end ICT pipeline that detects and recovers from real-world network degradation, and still delivers a binding affinity decision for every submitted compound.
+WAN 네트워크 열화(지연·패킷 손실·페이로드 변조) 환경에서도 **모든 약물-표적 쌍에 누락 없이** 결합 친화도(pKd)를 예측하는 end-to-end ICT 파이프라인.
 
 ---
 
-## 3. System Architecture Diagram
+## 이 프로젝트는 무엇을 실험하는가?
+
+### 연구 대상 범위
+
+**Imatinib + BCR-ABL 하나만을 위한 시스템이 아니다.**  
+DAVIS 데이터셋에서 검증된 **10종 항암 약물 × 6종 키나아제 표적**을 처리한다.
+
+| 약물 | 표적 단백질 | 적응증 |
+|------|-------------|--------|
+| Imatinib, Nilotinib, Dasatinib | ABL1 (1138aa) | 만성 골수성 백혈병 (CML) |
+| Gefitinib, Erlotinib | EGFR (1210aa) | 비소세포 폐암 (NSCLC) |
+| Sorafenib, Vemurafenib | BRAF (772aa) | 흑색종·간암 |
+| Ibrutinib | BTK (666aa) | B세포 림프종 |
+| Sunitinib | PDGFRA (1089aa) | GIST·신세포암 |
+| Crizotinib | ALK (1620aa) | ALK+ NSCLC |
+
+모든 단백질 서열은 DAVIS canonical full-length 서열 (`davis_seqs_for_demo.json`)을 사용하며, FoldSeek 3Di 구조 토큰 캐시 히트가 확인된 서열이다.
+
+### AI 모델 요약
 
 ```
-[Step 1] Edge Node (Process A)
-  Generate DTI queries: {query_id, SMILES, AA sequence, timestamp}
-      ↓  ── WAN simulation ──────────────────────────────────────
-[Step 2] Transmission Constraints
-  Latency: sleep(0.5~2.0 s) | Drop: 15% random | Corrupt: noise σ=0.05
-      ↓
-[Step 3] Server Node (Process B) — collect & buffer; log drops/corrupts
-      ↓
-[Step 4] AI Processing & Recovery
-  Normal path : Morgan FP + SaProt-650M-4bit → MLP → pKd
-  Dropped/corrupt : rolling mean of last 5 valid pKd (imputation)
-      ↓
-[Step 5] Decision Engine
-  pKd ≥ 7.0 → HIGH "Promising" | 5.0–7.0 → MODERATE | < 5.0 → LOW
-  packet loss > 30% → ALERT "Network Degraded"
-      ↓
-[Step 6] Streamlit Dashboard (auto-refresh 2 s)
-  pKd time-series | decision badges | packet stats | threshold slider
+SMILES  → ft-ChemBERTa (768-dim)  ─┐
+                                     ├→ MLP Head → pKd (회귀)
+AA seq  → 3Di tokens → SaProt-650M  ─┘
 ```
-Process A ↔ Process B communicate via `multiprocessing.Queue` (same machine, logically separated).
+
+- BindingDB 사전학습: **Pearson r = 0.8923**
+- DAVIS 전이학습: **Pearson r = 0.8677**
+- KIBA 전이학습: **Pearson r = 0.8594**
 
 ---
 
-## 4. Intentional Constraints Design
+## 빠른 시작
 
-| Constraint | Implementation | Purpose |
-|-----------|---------------|---------|
-| **Latency** | `time.sleep(random.uniform(0.5, 2.0))` | Simulates congested WAN path |
-| **Packet Drop** | `if random.random() < DROP_RATE: skip` (default 15%) | Simulates unreliable delivery; tunable via dashboard slider |
-| **Corruption** | Gaussian noise (σ=0.05) injected into Morgan FP vector | Simulates payload bit-flip during transit |
+### 환경 설정
+
+```bash
+# conda 환경 생성 (처음 한 번만)
+bash setup_env.sh
+
+# 또는 직접 설치
+conda create -n bioinfo python=3.10 -y
+conda activate bioinfo
+pip install -r requirements.txt
+```
+
+> **주의:** `torchvision`, `torchaudio`는 transformers와 충돌 — 설치하지 말 것.  
+> DeepPurpose는 `prepare_sequences.py` 실행 시에만 필요: `pip install DeepPurpose`
+
+### 최초 1회: DAVIS 서열 준비
+
+```bash
+# DAVIS canonical 서열 추출 (3Di 캐시 히트 확인 포함)
+conda run -n bioinfo python prepare_sequences.py
+# → davis_seqs_for_demo.json 생성 (이미 repo에 포함되어 있어 재실행 불필요)
+```
+
+### 발표 데모 실행 (메인)
+
+```bash
+# 터미널 1: Streamlit 대시보드 먼저 실행
+conda run -n bioinfo streamlit run dashboard.py
+# → http://localhost:8501 브라우저에서 열기
+
+# 터미널 2: 파이프라인 데모 실행
+conda run -n bioinfo python demo.py
+
+# 영상 촬영용 권장 설정 (50쿼리, 30% 드롭)
+conda run -n bioinfo python demo.py \
+    --n_queries 50 \
+    --drop_rate 0.30 \
+    --corrupt_rate 0.15 \
+    --lat_min 0.6 --lat_max 1.4 \
+    --seed 77 \
+    --output results/demo50_log.jsonl
+```
+
+대시보드 사이드바에서 "로그 소스"를 `demo (demo_log.jsonl)`으로 선택 후 자동 새로고침 ON.
+
+### 기타 실행 명령
+
+```bash
+# 단순 파이프라인 (UI 없는 버전)
+conda run -n bioinfo python pipeline.py
+conda run -n bioinfo python pipeline.py --n_queries 50 --drop_rate 0.20
+
+# 모델 재학습 (GPU 필요, ~7시간)
+conda run -n bioinfo python train.py --dataset bindingdb
+conda run -n bioinfo python train.py --dataset davis
+
+# 시각화 생성
+conda run -n bioinfo python scripts/plot_poster_figures.py
+```
 
 ---
 
-## 5. Data & Decision Logic
+## 파일 구조
 
-**Data type:** Text (SMILES strings, amino acid sequences) → derived numerical features (2048-bit Morgan Fingerprint via RDKit; 1280-dim protein embedding via SaProt-650M).
-**Source:** DAVIS dataset (30,056 drug-protein pairs, public); KIBA used for cross-validation.
-
-**AI model:** SaProt-650M frozen encoder (NF4 4-bit quantization) + MLP regression head, pre-trained on DAVIS pKd. Validated: Pearson r = 0.7914 (DAVIS), 0.7994 (KIBA).
-
-**Recovery:** Dropped or corrupted packets → rolling mean imputation over the last 5 valid pKd predictions; flagged visually in the dashboard.
-
-**Decision:** pKd threshold rule (HIGH / MODERATE / LOW). Threshold values adjustable in real-time via Streamlit slider. System-level "Network Degraded" alert fires when packet loss rate exceeds 30%.
+```
+ICT_2026/
+│
+├── demo.py                    ← 발표용 메인 데모 (ANSI 색상, 영상 촬영 최적화)
+├── pipeline.py                ← 기본 파이프라인 (데모보다 단순한 출력)
+├── dashboard.py               ← Streamlit 실시간 대시보드 (auto-refresh 2s)
+├── train.py                   ← SaProt + DTI 모델 학습 (train_dti_saprot.py에서 이름 변경)
+├── prepare_sequences.py       ← DAVIS canonical 서열 추출 → davis_seqs_for_demo.json
+│
+├── davis_seqs_for_demo.json   ← 10개 단백질 full-length 서열 + 3Di 히트 정보
+├── requirements.txt           ← Python 의존성
+├── setup_env.sh               ← conda 환경 초기 설정 스크립트
+│
+├── tools/                     ← AI 추론 모듈 (demo.py, pipeline.py에서 임포트)
+│   ├── dti_tool.py            ← DTI 추론 API (SaProt + ChemBERTa + MLP Head, singleton)
+│   ├── chemberta_drug_encoder.py  ← ChemBERTa 약물 인코더
+│   ├── rdkit_tool.py          ← RDKit Morgan FP 계산
+│   ├── alphafold_tool.py      ← AlphaFold2 구조 조회 (UniProt → PDB)
+│   ├── foldseek_tool.py       ← FoldSeek 3Di 토큰 추출
+│   ├── pubchem_tool.py        ← PubChem 약물 정보 조회
+│   ├── uniprot_tool.py        ← UniProt 단백질 서열 조회
+│   └── gnn_drug_encoder.py    ← GNN 기반 약물 인코더 (실험용, 미사용)
+│
+├── scripts/                   ← 학습·전처리·평가 스크립트 (일회성 실행)
+│   ├── build_3di_cache.py     ← FoldSeek 3Di 토큰 캐시 구축
+│   ├── preprocess_bindingdb.py ← BindingDB 데이터 전처리
+│   ├── finetune_head.py       ← DAVIS/KIBA 헤드 전이학습 (기본)
+│   ├── finetune_head_ft.py    ← ft-ChemBERTa + 헤드 전이학습
+│   ├── train_chemberta_unfreeze.py ← ChemBERTa layers 4~5 unfreeze 학습
+│   ├── cross_eval.py          ← 교차 데이터셋 평가 (DAVIS↔KIBA)
+│   └── plot_poster_figures.py ← 발표 포스터용 시각화 생성
+│
+├── cache/                     ← 3Di 토큰 캐시 (MD5 해시 → 구조 토큰)
+│   ├── 3di_tokens_davis.json  ← DAVIS 379개 단백질 3Di 토큰
+│   ├── 3di_tokens_kiba.json   ← KIBA 단백질 3Di 토큰
+│   ├── 3di_tokens_bindingdb.json ← BindingDB 단백질 3Di 토큰
+│   ├── alphafold/             ← AlphaFold PDB 파일 캐시
+│   ├── ligands/               ← 리간드 SDF 파일 캐시
+│   ├── pubchem/               ← PubChem 조회 결과 캐시
+│   └── uniprot/               ← UniProt 서열 조회 캐시
+│
+├── results/                   ← 학습 모델 가중치 및 실험 결과
+│   ├── SaProt-650M-bindingdb-3di-chemberta-unfreeze2-random/
+│   │   ├── result.json        ← 학습 결과 (r=0.8923)
+│   │   ├── dti_head.pt        ← MLP head 가중치 (demo.py에서 로드)
+│   │   └── chemberta_ft.pt    ← fine-tuned ChemBERTa 가중치
+│   ├── finetune_davis_random_.../
+│   │   └── result.json        ← DAVIS 전이 결과 (r=0.8677)
+│   ├── finetune_kiba_random_.../
+│   │   └── result.json        ← KIBA 전이 결과 (r=0.8594)
+│   ├── demo_log.jsonl         ← demo.py 실행 결과 로그 (JSONL)
+│   ├── demo_summary.json      ← demo.py 요약 통계
+│   ├── demo50_log.jsonl       ← 50쿼리 실험 로그
+│   ├── pipeline_log.jsonl     ← pipeline.py 실행 결과
+│   └── pipeline_summary.json  ← pipeline.py 요약 통계
+│
+├── docs/                      ← 기술 문서
+│   └── REPORT.md              ← 종합 기술 보고서 (모델·실험·Q&A 포함)
+│
+├── ARCHITECTURE.md            ← 시스템 아키텍처 다이어그램 (Mermaid)
+└── README.md                  ← 이 파일
+```
 
 ---
 
-## 6. Tech Stack
+## 주요 파라미터
 
-| Layer | Technology |
-|-------|-----------|
-| Language | Python 3.10 |
-| AI / ML | PyTorch 2.6, HuggingFace Transformers, bitsandbytes (4-bit) |
-| Drug encoding | RDKit (Morgan Fingerprint) |
-| Protein encoding | SaProt-650M-AF2 |
-| Inter-process comm. | `multiprocessing.Queue` / TCP loopback socket |
-| Dashboard | Streamlit |
-| Data | DAVIS / KIBA (DeepPurpose library) |
-| Version control | GitHub (github.com/ohsejun97/ICT-Application-Technology) |
+`demo.py` / `pipeline.py` 공통 CLI 옵션:
+
+| 파라미터 | 기본값 | 설명 |
+|----------|--------|------|
+| `--n_queries` | 20 | 전송할 쿼리 수 |
+| `--drop_rate` | 0.20 | 패킷 드롭 확률 (0.0~1.0) |
+| `--corrupt_rate` | 0.15 | 페이로드 변조 확률 |
+| `--lat_min` / `--lat_max` | 0.4 / 1.2 | 전송 지연 범위 (초) |
+| `--pkd_high` | 7.0 | HIGH 결합 임계값 |
+| `--pkd_mod` | 5.0 | MODERATE 결합 임계값 |
+| `--seed` | 7 | 재현성 시드 |
+| `--output` | results/demo_log.jsonl | 결과 로그 경로 |
+
+---
+
+## 출력 형식
+
+결과 로그 (`*.jsonl`) 각 행은 다음 형식:
+
+```json
+{
+  "query_id": "Q01",
+  "drug_name": "Imatinib",
+  "protein_name": "ABL1",
+  "pKd": 7.7431,
+  "decision": "HIGH",
+  "path": "normal",
+  "corrupt": false,
+  "used_3di": true,
+  "latency_ms": 842.3,
+  "timestamp": "2026-05-16T..."
+}
+```
+
+`path` 값: `normal` | `corrupt_recovered` | `drop_imputed` | `imputed`
+
+---
+
+## 기술 스택
+
+| 레이어 | 기술 |
+|--------|------|
+| 언어 | Python 3.10 (`bioinfo` conda 환경) |
+| 단백질 인코더 | SaProt-650M-AF2 (EsmModel, FP16, frozen) |
+| 구조 토큰 | FoldSeek 3Di (AlphaFold2 구조 기반, MD5 캐시) |
+| 약물 인코더 | ChemBERTa (seyonec/ChemBERTa-zinc-base-v1, layers 4~5 fine-tuned) |
+| 회귀 헤드 | MLP [1280+768 → 512 → 256 → 64 → 1] |
+| 프로세스 통신 | `multiprocessing.Queue` + `mp.Event` |
+| 대시보드 | Streamlit (auto-refresh 2s) |
+| 데이터셋 | BindingDB (80K), DAVIS (30K), KIBA (118K) |
+| 화학정보학 | RDKit |
+
+---
+
+## 실험 핵심 결과 (50쿼리, 드롭률 34%)
+
+```
+Zero Silent Drop:   50/50  (100%)
+변조 복구 정확도:    3/3   (100%)
+드롭 복구 정확도:   13/17  (76.5%)
+Network Alert:      정확 발동 (34% > 30% 기준)
+AI 추론 실패:        0/33  (0%)
+```
+
+자세한 분석은 [`docs/REPORT.md`](docs/REPORT.md) 참조.
