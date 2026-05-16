@@ -23,7 +23,7 @@ st.set_page_config(
     layout="wide",
 )
 
-ROOT = Path(__file__).parent
+ROOT = Path(__file__).parent.parent
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 st.sidebar.title("⚙️ Settings")

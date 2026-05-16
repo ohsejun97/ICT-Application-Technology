@@ -68,20 +68,19 @@ conda run -n bioinfo python scripts/prepare_sequences.py
 
 ```bash
 # 터미널 1: Streamlit 대시보드 먼저 실행
-conda run -n bioinfo streamlit run dashboard.py
+conda run -n bioinfo streamlit run run/dashboard.py
 # → http://localhost:8501 브라우저에서 열기
 
 # 터미널 2: 파이프라인 데모 실행
-conda run -n bioinfo python demo.py
+conda run -n bioinfo python run/demo.py
 
 # 영상 촬영용 권장 설정 (50쿼리, 30% 드롭)
-conda run -n bioinfo python demo.py \
+conda run -n bioinfo python run/demo.py \
     --n_queries 50 \
     --drop_rate 0.30 \
     --corrupt_rate 0.15 \
     --lat_min 0.6 --lat_max 1.4 \
-    --seed 77 \
-    --output results/demo50_log.jsonl
+    --seed 77
 ```
 
 대시보드 사이드바에서 "로그 소스"를 `demo (demo_log.jsonl)`으로 선택 후 자동 새로고침 ON.
@@ -108,12 +107,12 @@ conda run -n bioinfo python models/plot_poster_figures.py
 ```
 ICT_2026/
 │
-├── demo.py                    ← 발표용 메인 데모 (ANSI 색상, 영상 촬영 최적화)
-├── dashboard.py               ← Streamlit 실시간 대시보드 (auto-refresh 2s)
+├── run/                       ← 실행 진입점
+│   ├── demo.py                ← 발표용 메인 데모 (ANSI 색상, 영상 촬영 최적화)
+│   └── dashboard.py           ← Streamlit 실시간 대시보드 (auto-refresh 2s)
 │
-├── davis_seqs_for_demo.json   ← 10개 단백질 full-length 서열 + 3Di 히트 정보
+├── davis_seqs_for_demo.json   ← DAVIS full-length 단백질 서열 (demo.py가 읽는 데이터)
 ├── requirements.txt           ← Python 의존성
-├── setup_env.sh               ← conda 환경 초기 설정 스크립트
 │
 ├── tools/                     ← 추론 엔진 (demo.py가 런타임에 임포트)
 │   ├── dti_tool.py            ← DTI 추론 API — SaProt + ChemBERTa + MLP Head (핵심)

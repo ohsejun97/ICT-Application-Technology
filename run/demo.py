@@ -49,7 +49,7 @@ parser.add_argument("--seed",         type=int,   default=7)
 parser.add_argument("--output",       default="results/demo_log.jsonl")
 args = parser.parse_args()
 
-ROOT = Path(__file__).parent
+ROOT = Path(__file__).parent.parent
 OUT  = ROOT / args.output
 OUT.parent.mkdir(parents=True, exist_ok=True)
 
